@@ -19,8 +19,6 @@ return new class extends Migration
             $table->decimal('price', 8, 2);
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('shop_id');
-            $table->timestamps();
-
             $table->foreign('category_id')->references('id')->on('categories');
             $table->foreign('shop_id')->references('id')->on('shops');
             $table->timestamps();
