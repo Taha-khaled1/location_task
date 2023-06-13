@@ -27,6 +27,11 @@ class UserPreferenceSeeder extends Seeder
                 'weight' => 3,
             ],
             [
+                'user_id' => 1,
+                'category_id' => 3,
+                'weight' => 2,
+            ],
+            [
                 'user_id' => 2,
                 'category_id' => 1,
                 'weight' => 2,

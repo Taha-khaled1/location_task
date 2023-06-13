@@ -25,6 +25,7 @@ class ProductController extends Controller
     
         $latitude = $request->input('latitude');
         $longitude = $request->input('longitude');
+        $userId = $request->input('user_id');
     
         // Get the IDs of the nearest shops based on distance
         $nearestShops = Shop::select(
@@ -38,18 +39,24 @@ class ProductController extends Controller
     
         $shopIds = $nearestShops->pluck('id')->toArray();
     
-        // Retrieve products based on the specified order
+        // Retrieve products based on the specified order and user preferences
         $products = Product::whereIn('shop_id', $shopIds)
             ->leftJoin('orders', 'products.id', '=', 'orders.product_id')
+            ->leftJoin('user_preferences', function ($join) use ($userId) {
+                $join->on('products.category_id', '=', 'user_preferences.category_id')
+                    ->where('user_preferences.user_id', $userId);
+            })
             ->select(
                 'products.id',
                 'products.price',
                 'products.category_id',
                 'products.shop_id',
                 DB::raw('SUM(orders.quantity) as total_quantity'),
-                DB::raw('FIELD(shop_id, ' . implode(',', $shopIds) . ') as shop_order')
+                DB::raw('FIELD(shop_id, ' . implode(',', $shopIds) . ') as shop_order'),
+                DB::raw('SUM(user_preferences.weight) as preference_score')
             )
             ->groupBy('products.id', 'products.price', 'products.category_id', 'products.shop_id')
+            ->orderByDesc('preference_score') // Sort by preference score
             ->orderByDesc('total_quantity') // Sort by best-selling (based on total quantity ordered)
             ->orderBy('shop_order') // Sort by proximity to the location
             ->orderByDesc('products.created_at') // Sort by new products
@@ -58,7 +65,6 @@ class ProductController extends Controller
     
         return response()->json($products);
     }
-    
     
     
     
