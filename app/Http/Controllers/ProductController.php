@@ -63,7 +63,7 @@ class ProductController extends Controller
             ->orderBy('products.id') // Sort by regular products
             ->get();
     
-        return response()->json($products);
+        return response()->json(["products"=>$products],200);
     }
     
     
